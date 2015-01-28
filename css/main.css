@@ -1,0 +1,261 @@
+﻿html{
+	min-height: 100%;
+	font-size:8px;
+}
+
+/*@media screen and (min-width: 500px) {
+	html{
+		min-height: 100%;
+		font-size:16px;
+	}
+}*/
+
+body {
+	background: rgb(232,233,235);
+	font-family:sans-serif;
+	margin:0;
+	opacity:0;
+}
+
+#header{
+	position: relative;
+	width: 100%;
+	height: 50px;
+	background: rgb(250,159,80);
+	margin:0;
+	/*background: red;*/
+	z-index:80;
+}
+
+#content{
+	position: relative;
+	width: 100%;
+	height: 80%;
+	margin:0;
+	/*background: red;*/
+}
+
+.image{
+	height:100%;
+}
+
+#header_content{
+	position: absolute;
+	left:0;
+	top: 50%;
+	height:44%;
+	width:100%;
+	font-size:2rem;
+	display:inline-block;
+	transform: translate(0, -50%);
+	-ms-transform: translate(0, -50%); /* IE 9 */
+	-webkit-transform: translate(0, -50%); /* Safari and Chrome */
+	background: white;
+}
+
+#location{
+	position:relative;
+	top:-25%;
+	height:100%;
+	/*width: 65%;*/
+	font-family:sans-serif;
+	font-size:2rem;
+	display:inline-block;
+	/*background:black;*/
+}
+
+.column{
+	position: relative;
+	width: 100%;
+	height: 80px;
+	background: white;
+	border-bottom: 1px solid;
+	border-bottom-color: rgb(232,233,235);
+}
+
+.column:active{
+	background: rgb(148,148,148);
+}
+
+/*.column div:nth-child(1){
+	position: absolute;
+	left:0;
+	top: 50%;
+	height:50%;
+	width:100%;
+	font-size:2rem;
+	display:inline-block;
+	transform: translate(0, -50%);
+	-ms-transform: translate(0, -50%); /* IE 9 
+	-webkit-transform: translate(0, -50%); /* Safari and Chrome 
+	line-height:35px;
+}*/
+
+#peccancy{
+	position: absolute;
+	left:0;
+	top: 50%;
+	height:50%;
+	width:100%;
+	font-size:2rem;
+	font-weight:900;
+	display:inline-block;
+	transform: translate(0, -50%);
+	-ms-transform: translate(0, -50%); /* IE 9 */
+	-webkit-transform: translate(0, -50%); /* Safari and Chrome */
+	line-height:35px;
+}
+
+#peccancy div:nth-child(3){
+	/*position:relative;
+	top:-25%;
+	height:100%;
+	width: 65%;*/
+	/*font-family:sans-serif;
+	font-size:2rem;*/
+	display:inline-block;
+	float:right;
+	/*background:black;*/
+}
+
+.merchant{
+	position: absolute;
+	left:0;
+	top: 50%;
+	height:80%;
+	width:100%;
+	font-size:13px;
+	display:inline-block;
+	transform: translate(0, -50%);
+	-ms-transform: translate(0, -50%); /* IE 9 */
+	-webkit-transform: translate(0, -50%); /* Safari and Chrome */
+	/*line-height:35px;*/
+}
+
+.merchant .merchant_photo{
+	position:relative;
+	float:left;
+	width: 60px;
+	height:60px;
+	display:block;
+	overflow:hidden;
+	margin-left:13px;
+	margin-right:7px;
+}
+
+.merchant .merchant_detail{
+	/*width: 60%;*/
+	height:100%;
+	display:inline-block;
+	position:relative;
+	float:left;
+	margin-right:7px;
+}
+
+.merchant .merchant_name{
+	height:32%;
+	/*position:absolute;
+	top:0;
+	left:0;*/
+	line-height:17px;
+	font-size:2rem;
+	width:100%;
+	font-weight:900;
+}
+
+.merchant .merchant_dist{
+	width:100%;
+	height:32%;
+	/*position:absolute;
+	top:40%;
+	left;0;*/
+}
+
+.merchant .distance{
+	position:relative;
+	line-height:17px;
+	display: inline-block;
+	color: rgb(250,159,80);
+}
+
+.merchant .free_time{
+	/*position:absolute;
+	top:66%;*/
+	left;0;
+	color: rgb(132,227,186);
+	line-height:25px;
+}
+
+.merchant .merchant_infor{
+	position:relative;
+	float:right;
+	width: 70px;
+	height:100%;
+	display:block;
+	font-size:13px;
+	font-weight:normal;
+	margin-right:13px;
+}
+
+.merchant .merchant_quest{
+	border:1px solid;
+	border-radius:3px;
+	color:rgb(132,227,186);
+	border-color:rgb(132,227,186);
+	overflow:visible;
+	text-align:center;
+}
+
+.merchant .image{
+	height:15px;
+	position:relative;
+	top:10%;
+}
+
+#viewMore{
+	width:100%;
+	height:40px;
+	color:rgb(250,159,80);
+	background: white;
+	font-size:2rem;
+	font-weight:900;
+	line-height:40px;
+	text-align:center;
+}
+
+#footer{
+	width:100%;
+	height:40px;
+	margin:22px 0;
+	text-align:center;
+	font-size:12px;
+	color:rgb(158,156,154);
+}
+
+a:link {color:rgb(158,156,154);text-decoration:none;}
+a:visited {color:rgb(158,156,154);text-decoration:none;}
+a:hover {color:rgb(158,156,154);text-decoration:none;}
+a:active {color:rgb(158,156,154);text-decoration:none;}
+
+#messageBox{
+	position: absolute;
+	left:50%;
+	top: 50%;
+	height:80%;
+	width:100%;
+	font-size:13px;
+	display:inline-block;
+	transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%); /* IE 9 */
+	-webkit-transform: translate(-50%, -50%); /* Safari and Chrome */
+}
+
+#mask{
+	position: absolute;
+	left:0;
+	top: 0;
+	width:100%;
+	height:100%;
+	background:black;
+	opacity:0.5;
+}
