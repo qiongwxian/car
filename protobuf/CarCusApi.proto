@@ -3,55 +3,65 @@ package zeta_car;
 import "Model.proto";
 import "Util.proto";
 
-option java_package = "com.zetast.carcus.netapi";
+option java_package = "com.zetast.ecar.netapi";
 option java_multiple_files = true;
 
+enum CusApiVersion{
+    cur_version = 1;
+}
+
 enum CusNetApiType{
-	kSendVerifyCode = 1;
-	kVerifyPhone = 2;
-	kUserLogin = 3;
-	kUserChangeUsername = 4;
-	kGetStationForLocation = 5;
-	kGetServiceInStation = 6;
-	kGetStationFromId = 7;
-	kGetProductFromId = 8;
-	kUserCreateOrder = 9;
-	kUserQueryOrder = 10;
-	kUserConfirmFinishService = 11;
-	kUserApplyCancelOrder = 12;
-	kGetOrderFromId = 13;
-	kGetIndexStation = 14;
-	kCheckFreeStateForStation = 15;
-	kUserEvaluateOrder = 16;
-	kGetStationDetail = 17;
-	kUserRegisterPushToken = 18;
-	kUserGetCoupon = 19;
-	kUserSearchStation = 20;
-	kUploadViolationQueryCarInfo = 21;
-	kGetUserViolationQueryCarInfo = 22;
-	kGetViolationQueryResult = 23;
+    kSendVerifyCode = 1;
+    kVerifyPhone = 2;
+    kUserChangeUsername = 3;
+    kGetStationForLocation = 4;
+    kGetServiceInStation = 5;
+    kGetStationFromId = 6;
+    kGetProductFromId = 7;
+    kUserCreateOrder = 8;
+    kUserQueryOrder = 9;
+    kUserConfirmFinishService = 10;
+    kUserApplyCancelOrder = 11;
+    kGetOrderFromId = 12;
+    kGetIndexStation = 13;
+    kCheckFreeStateForStation = 14;
+    kUserEvaluateOrder = 15;
+    kGetStationDetail = 16;
+    kUserRegisterPushToken = 17;
+    kUserGetCoupon = 18;
+    kUserSearchStation = 19;
+    kUploadViolationQueryCarInfo = 20;
+    kGetUserViolationQueryCarInfo = 21;
+    kGetViolationQueryResult = 22;
+    kCusRongCloudTokenIncorrect = 23;
+    kUserAddCarInfo = 24;
+    kUserModifyCarInfo = 25;
+    kUserDeleteCarInfo = 26;
+    kUserAddStationCollection = 27;
+    kUserCancelStationCollection = 28;
+    kUserGetStationCollection = 29;
 }
 
 //接口请求报文基类
 message BaseRequest {
-	required int32 sdk_version=1;      //接口版本号
-	required int32 device_type = 2;  //设备类型用1 表示 and，2 表示 ios 区分；
-	required string device_id = 3;  //设备唯一标示符
-	optional int32 client_version = 4;    //客户端版本号
-	optional string sign = 5;       //上载内容的sign值 不强制需要 一些比较重要的接口里面要加
+    required int32 sdk_version=1;      //接口版本号
+    required int32 device_type = 2;  //设备类型用1 表示 and，2 表示 ios 区分；
+    required string device_id = 3;  //设备唯一标示符
+    optional int32 client_version = 4;    //客户端版本号
+    optional string sign = 5;       //上载内容的sign值 不强制需要 一些比较重要的接口里面要加
 
-	optional CusUserIdentity userIdentity = 6;
+    optional CusUserIdentity userIdentity = 6;
 }
 
 message CusUserIdentity{
-	required int64 user_id = 1; //用户id
-	required string token = 2; //用户鉴权用的token
+    required int64 user_id = 1; //用户id
+    required string token = 2; //用户鉴权用的token
 }
 
 //接口响应报文基类
 message BaseResponse {
-	required int32 status = 1;//状态码 表示是否处理成功 0为调用正常
-	optional string info = 2; //消息，相当于服务器通知
+    required int32 status = 1;//状态码 表示是否处理成功 0为调用正常
+    optional string info = 2; //消息，相当于服务器通知
 }
 
 //----------接口部分----------
@@ -59,232 +69,194 @@ message BaseResponse {
 //登陆相关接口 现在只有短信验证登陆 所以把这两个接口放到最前面
 //API 1 
 message SendVerifyCodeRequest{
-	required BaseRequest baseRequest = 1;
-	required string phone_num = 2;
+    required BaseRequest baseRequest = 1;
+    required string phone_num = 2;
 }
 
 message SendVerifyCodeResponse{
-	required BaseResponse baseResponse = 1;
+    required BaseResponse baseResponse = 1;
 }
 
 //API 2  验证手机号接口 可以直接做登陆接口用
 message VerifyPhoneRequest{
-	required BaseRequest baseRequest = 1;
-	required string phone_num = 2;
-	required string msg_verify_code = 3;
+    required BaseRequest baseRequest = 1;
+    required string phone_num = 2;
+    required string msg_verify_code = 3;
 
 }
 
 message VerifyPhoneResponse{
-	required BaseResponse baseResponse = 1;
+    required BaseResponse baseResponse = 1;
 
-	//如果验证码验证通过了 用户存在就登陆 不存在就新建一个用户 然后自动登陆了 如果这次是第一次注册的话 is_first_register字段返回true
-	required User user = 2;
-	required string token = 3;
-	required bool is_first_register = 4 [default = false];
+    //如果验证码验证通过了 用户存在就登陆 不存在就新建一个用户 然后自动登陆了 如果这次是第一次注册的话 is_first_register字段返回true
+    required User user = 2;
+    required string token = 3;
+    required bool is_first_register = 4 [default = false];
 
-	repeated CarInfo car_infos = 5;
-	repeated Coupon coupons = 6;
+    repeated CarInfo car_infos = 5;
+    repeated Coupon coupons = 6;
 
-	//用户默认的车辆信息 CarInfo中的id字段 重要性不是特别高 可先不实现这个字段 
-	optional int64 default_cartype_id = 7;
+    //用户默认的车辆信息 CarInfo中的id字段 重要性不是特别高 可先不实现这个字段 
+    optional int64 default_cartype_id = 7;
+
+    // 融云聊天登陆的token C端用户登陆融云的用户名为"cus_" + user_id
+    required string rong_cloud_token = 20;
 }
 
-
-
-// API 3 用户登陆目前直接用VerifyPhone接口 UserLogin这个接口目前暂时留着
-//message UserLoginRequest{
-//	required BaseRequest baseRequest = 1;
-//
-//	//optional string username = 2;
-//	//optional string password = 3;
-//
-//	optional string phone_num = 4;
-//	optional string phone_verify_code = 5; //手机验证码登陆
-//
-//	// password 字段 sha1(sha1(sha1 (原始password + "wearezeta") + "carzeta"))
-//}
-//
-//message UserLoginResponse{
-//	required BaseResponse baseResponse = 1;
-//	required User user = 2;
-//	required string token = 3;
-//	repeated CarInfo car_infos = 4;
-//	repeated Coupon coupons = 5;
-//
-//	//用户默认的车辆信息 CarType中的id字段 重要性不是特别高 可先不实现这个字段 
-//	optional int64 default_cartype_id = 6;
-//}
 
 // API 4
 message UserChangeUsernameRequest{
-	required BaseRequest baseRequest = 1;
-	required string new_username = 2;
+    required BaseRequest baseRequest = 1;
+    required string new_username = 2;
 }
 
 message UserChangeUsernameResponse{
-	required BaseResponse baseResponse = 1;
+    required BaseResponse baseResponse = 1;
 }
 
 
 // API 5 : get all station for user location
 message GetStationForLocationRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 locate_id = 2; //目前用城市的id 如整个广州市
-	required int32 sort = 3; //排序方式 暂未确定
+    required BaseRequest baseRequest = 1;
+    required int64 locate_id = 2; //目前用城市的id 如整个广州市
+    enum StationSortWay {
+        StationSortWay_Default = 1;//默认按距离
+        StationSortWay_Sale = 2;
+        StationSortWay_Score = 3;
+        StationSortWay_Free = 4;
+    }
+    required StationSortWay sort = 3; //排序方式 暂未确定
 
-	// station_id 为基于哪个station返回数据 refresh_direction为刷新的方向
-	required int32 refresh_direct = 4; //刷新方向 1为向下浏览加载更多，2为刷新
-	required int64 station_id = 5; // 指明偏移量的订单id
+    // station_id 为基于哪个station返回数据 refresh_direction为刷新的方向
+    required int32 refresh_direct = 4; //刷新方向 1为向下浏览加载更多，2为刷新
+    required int64 station_id = 5; // 指明偏移量的订单id
 
-	optional double latitude = 6; // 纬度
-	optional double longitude = 7; //经度
+    optional double latitude = 6; // 纬度
+    optional double longitude = 7; //经度
 
+    optional string key = 8; //搜索店家用的关键字
 }
 
 message GetStationForLocationResponse{
-	required BaseResponse baseResponse = 1;
-	repeated Station stations = 2;
+    required BaseResponse baseResponse = 1;
+    //这里的Station里面要填充next_free_time和score字段
+    repeated Station stations = 2;
 }
 
 // API 6 : get service in station 现在只能下单服务
 message GetServiceInStationRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 station_id = 2;
-	required int32 sort = 3; //排序方式 暂未确定
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
+    required int32 sort = 3; //排序方式 暂未确定
 
-	required int32 refresh_direct = 4; //刷新方向 1为向下浏览加载更多，2为刷新
-	required int64 product_id = 5; // 指明偏移量的订单id
+    required int32 refresh_direct = 4; //刷新方向 1为向下浏览加载更多，2为刷新
+    required int64 product_id = 5; // 指明偏移量的订单id
 }
 
 message GetServiceInStationResponse{
-	required BaseResponse baseResponse = 1;
-	repeated Product services = 2;
+    required BaseResponse baseResponse = 1;
+    repeated Product services = 2;
 }
 
 //API 7 
 message GetStationFromIdRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 station_id = 2;
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
 }
 
 message GetStationFromIdResponse{
-	required BaseResponse baseResponse = 1;
-	optional Station station = 2;
+    required BaseResponse baseResponse = 1;
+    optional Station station = 2;
 }
 
 //API 8 
 message GetProductFromIdRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 product_id = 2;
+    required BaseRequest baseRequest = 1;
+    required int64 product_id = 2;
 } 
 
 message GetProductFromIdResponse{
-	required BaseResponse baseResponse = 1;
-	optional Product product = 2;
+    required BaseResponse baseResponse = 1;
+    optional Product product = 2;
 }
 
 // ------------订单接口部分---------
 //API 9
 message UserCreateOrderRequest{
-	required BaseRequest baseRequest = 1;
-	required Order order = 2;
+    required BaseRequest baseRequest = 1;
+    required Order order = 2;
 }
 
 message UserCreateOrderResponse{
-	required BaseResponse baseResponse = 1;
-	optional Order order = 2;
+    required BaseResponse baseResponse = 1;
+    optional Order order = 2;
 }
 
 //API 10 获取用户的订单
 message UserQueryOrderRequest{
-	required BaseRequest baseRequest = 1;
-	required int32 sort = 2; //排序方式 暂未确定
+    required BaseRequest baseRequest = 1;
+    required int32 sort = 2; //排序方式 暂未确定
 
-	required int32 refresh_direct = 3; //刷新方向 1为向下浏览加载更多，2为刷新
-	required int64 order_id = 4; // 指明偏移量的订单id
+    required int32 refresh_direct = 3; //刷新方向 1为向下浏览加载更多，2为刷新
+    required int64 order_id = 4; // 指明偏移量的订单id
 }
 
 message UserQueryOrderResponse{
-	required BaseResponse baseResponse = 1;
-	repeated Order orders = 2;
-	//返回的Order中所有涉及到的station
-	repeated Station stations = 3;
-}
-
-//API 11 用户点击了服务完成 但是不一定每个订单都要用户确认 应该有个自动确认 超时时间待确认
-message UserConfirmFinishServiceRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 order_id = 2;
-}
-
-message UserConfirmFinishServiceResponse{
-	required BaseResponse baseResponse = 1;
-	required Order order = 2;
+    required BaseResponse baseResponse = 1;
+    repeated Order orders = 2;
+    //返回的Order中所有涉及到的station
+    repeated Station stations = 3;
 }
 
 //API 12 用户申请取消订单
-// 涉及到一些退款 要B端确认 注意退款中订单状态的锁定
 message UserApplyCancelOrderRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 order_id = 2;
-	optional string cancel_reason = 3;
+    required BaseRequest baseRequest = 1;
+    required int64 order_id = 2;
+    optional string cancel_reason = 3;
 }
 
 message UserApplyCancelOrderResponse{
-	required BaseResponse baseResponse = 1;
-	required Order order = 2;
+    required BaseResponse baseResponse = 1;
+    required Order order = 2;
 }
 
 //API 13 
 message GetOrderFromIdRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 order_id = 2;
+    required BaseRequest baseRequest = 1;
+    required int64 order_id = 2;
 }
 
 message GetOrderFromIdResponse{
-	required BaseResponse baseResponse = 1;
-	required Order order = 2;
-}
-
-//API 14 获取要在首页显示的洗车行 目前是距离最近的3个车行
-message GetIndexStationRequest{
-	required BaseRequest baseRequest = 1;
-
-	optional double latitude = 2; // 纬度
-	optional double longitude = 3; //经度
-}
-
-message GetIndexStationResponse{
-	required BaseResponse baseResponse = 1;
-	repeated Station stations = 2;
+    required BaseResponse baseResponse = 1;
+    required Order order = 2;
+    required Station station = 3;
 }
 
 
 //API 15 验证一个车行的空闲情况
 message CheckFreeStateForStationRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 station_id = 2;
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
 
-	// "2014-11-11 00:00:00"
-	//表示 "2014-11-11 00:00:00" - "2014-11-11 00:29:59"
-	repeated string time_periods = 3;
+    // "2014-11-11 00:00:00"
+    //表示 "2014-11-11 00:00:00" - "2014-11-11 00:29:59"
+    repeated string time_periods = 3;
 }
 
 message CheckFreeStateForStationResponse{
-	required BaseResponse baseResponse = 1;
+    required BaseResponse baseResponse = 1;
 
-	message FreeStateUnit{
-		required string time_period = 1;
-		required int32 has_book_num = 2; //这个时间段 有多少人预约过了
-	}
+    message FreeStateUnit{
+        required string time_period = 1;
+        required int32 has_book_num = 2; //这个时间段 有多少人预约过了
+    }
 
-	repeated FreeStateUnit free_state = 2;
-	//这个店铺每个时间段能接受的最大预约订单
-	required int32 capacity_every_time_period = 3;
+    repeated FreeStateUnit free_state = 2;
+    //这个店铺每个时间段能接受的最大预约订单
+    required int32 capacity_every_time_period = 3;
 
-	//这个店每洗一个车要的分钟数 字段先留着 讨论以后再决定怎么搞
-	optional int32 mins_every_car = 4;
+    //这个店每洗一个车要的分钟数 字段先留着 讨论以后再决定怎么搞
+    optional int32 mins_every_car = 4;
 }
 
 
@@ -292,79 +264,73 @@ message CheckFreeStateForStationResponse{
 
 //API 17
 message UserEvaluateOrderRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 order_id = 2;
-	required int32 rating = 3; // 1-5 的一个总体评级
-	required string evaluate = 4; //客户输入的评价
+    required BaseRequest baseRequest = 1;
+    required int64 order_id = 2;
+    required int64 station_id = 3;
+    required int32 rating = 4; // 1-5 的一个总体评级
+    required int32 service_rate_rating = 5; //服务速度的评价 
+    required string evaluation = 6; //客户输入的评价
 }
 
 message UserEvaluateOrderResponse{
-	required BaseResponse baseResponse = 1;
+    required BaseResponse baseResponse = 1;
+    optional Order order = 2;
 }
 
 
 //API 18  店铺详情
 message GetStationDetailRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 station_id = 2;
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
 }
 
 message GetStationDetailResponse {
-	required BaseResponse baseResponse = 1;
-	//店铺的详情  目前需要 服务 套餐 用户评价
-	//数据应该不会太多 目前不加翻页
-	repeated Product services = 2;
-	repeated Product bundles = 3;
-	//用户的评论 按照评论的时间排序
-	//OrderEvaluation 这个类在Model 里面
-	repeated OrderEvaluation evaluations = 4;
+    required BaseResponse baseResponse = 1;
+    //店铺的详情  目前需要 服务 套餐 用户评价
+    //数据应该不会太多 目前不加翻页
+    repeated Product services = 2;
+    repeated Product bundles = 3;
+    //用户的评论 按照评论的时间排序
+    //OrderEvaluation 这个类在Model 里面
+    repeated OrderEvaluation evaluations = 4;
 }
 
 
 //API 19 这个不需要登陆 直接获取uuid
 message UserRegisterPushTokenRequest{
-	required BaseRequest baseRequest = 1;
+    required BaseRequest baseRequest = 1;
 
-	optional string client_id = 2; // 个推client id
-	optional string APNS_token = 3;  // iOS端APNS token
+    optional string client_id = 2; // 个推client id
+    optional string APNS_token = 3;  // iOS端APNS token
 }
 
 message UserRegisterPushTokenResponse {
-	required BaseResponse baseResponse = 1;  //响应基类
+    required BaseResponse baseResponse = 1;  //响应基类
 }
 
 //API 20 获取用户在某个店铺中的剩余套餐券 客户端在新建订单时 如果要使用套餐卷 要重新请求一次数据 防止本地数据和服务器不同步
 message UserGetCouponRequest{
-	required BaseRequest baseRequest = 1;
-	required int64 station_id = 2;
+    required BaseRequest baseRequest = 1;
+    //如果station_id 为-1 代表要筛选这个用户在所有的station中的剩余套餐
+    required int64 station_id = 2;
 }
 
 message UserGetCouponResponse {
-	required BaseResponse baseResponse = 1;
-	//注意可能没有套餐券 所以这里可能为空值
-	repeated Coupon remain_coupon= 2;
+    required BaseResponse baseResponse = 1;
+    //注意可能没有套餐券 所以这里可能为空值
+    repeated Coupon remain_coupon= 2;
+    //返回所有和上面remain_coupon相关的Station的信息
+    repeated Station station = 3;
 }
 
-//API 21 搜索商家
-message UserSearchStationRequest{
-	required BaseRequest baseRequest = 1;
-	required string key = 2;
-	optional LLCoordinate location= 3;
-}
-
-
-message UserSearchStationResponse{
-	required BaseResponse baseResponse = 1;
-	repeated Station stations = 2;
-}
 
 //--------------------------违章查询相关--------------
 message ViolationCarInfo{
-	required int64 car_id = 1;
+    required int64 car_id = 1;
     required string plate_num =  2;
     required string engine_num = 3; //发动机编号
     required string class_num =  4; //车架号
-	required string car_type  =  5; //车辆类型 现在只支持（"02"：小型汽车）
+    required string car_type  =  5; //车辆类型 现在只支持（"02"：小型汽车）
     optional string regist_num = 6; //证书编号 不懂啥东西 暂时不需要
 }
 
@@ -377,9 +343,9 @@ message ViolationRecord{
     required string occur_date = 6; //违章时间
     required string occur_area = 7; //违章所在地
     required string province = 8; //违章所在的省份
-    required int64 code = 9; //违章代码
+    required string code = 9; //违章代码
     required string info = 10; //违章内容
-    required int64 money = 11; //罚款金额
+    required int32 money = 11; //罚款金额
     required string city_name = 12; //违章所在的城市
 }
 
@@ -388,15 +354,15 @@ message ViolationRecord{
 //API 40
 message UploadViolationQueryCarInfoRequest{
     required BaseRequest baseRequest = 1;
-	required ViolationCarInfo car_info = 2;
+    required ViolationCarInfo car_info = 2;
 }
 
 message UploadViolationQueryCarInfoResponse{
     required BaseResponse baseResponse = 1;
-	//上传后 返回车辆信息 
-	optional ViolationCarInfo car_info = 2;
-	//上传后就直接查询一次违章记录 
-	repeated ViolationRecord records = 3;
+    //上传后 返回车辆信息 
+    optional ViolationCarInfo car_info = 2;
+    //上传后就直接查询一次违章记录 
+    repeated ViolationRecord records = 3;
 }
 
 
@@ -408,7 +374,7 @@ message GetUserViolationQueryCarInfoRequest{
 
 message GetUserViolationQueryCarInfoResponse{
     required BaseResponse baseResponse = 1;
-	optional ViolationCarInfo car_info = 2;
+    optional ViolationCarInfo car_info = 2;
 }
 
 //违章查询结果
@@ -419,7 +385,84 @@ message GetViolationQueryResultRequest{
 
 message GetViolationQueryResultResponse{
     required BaseResponse baseResponse = 1;
-	//如果该用户没有上传过违章查询相关的数据 baseResponse 里面返回异常 不过一般不会出现这样的错误
-	repeated ViolationRecord records = 2;
+    //如果该用户没有上传过违章查询相关的数据 baseResponse 里面返回异常 不过一般不会出现这样的错误
+    repeated ViolationRecord records = 2;
 }
 
+
+//-----------------------融云聊天相关接口
+//API 50 当融云登陆发生token错误的时候 调用这个接口获取新的融云登陆token
+message CusRongCloudTokenIncorrectRequest{
+    required BaseRequest baseRequest = 1;
+}
+
+message CusRongCloudTokenIncorrectResponse{
+    required BaseResponse baseResponse = 1;
+    //如果获取失败就baseResponse里面 返回异常 
+    required string rong_cloud_token = 2;
+}
+
+//---------------用户车辆信息()
+// API 60
+message UserAddCarInfoRequest{
+    required BaseRequest baseRequest = 1;
+    //carinfo 的id为-1
+    required CarInfo carinfo = 2;
+}
+
+message UserAddCarInfoResponse{
+    required BaseResponse baseResponse = 1;
+    optional CarInfo carinfo = 2;
+}
+
+// API 61
+message UserModifyCarInfoRequest{
+    required BaseRequest baseRequest = 1;
+    required CarInfo carinfo = 2;
+}
+
+message UserModifyCarInfoResponse{
+    required BaseResponse baseResponse = 1;
+    optional CarInfo carinfo = 2;
+}
+
+// API 62
+message UserDeleteCarInfoRequest{
+    required BaseRequest baseRequest = 1;
+    required int64 carinfo_id = 2;
+}
+
+message UserDeleteCarInfoResponse{
+    required BaseResponse baseResponse = 1;
+}
+
+// ------------------用户收藏某些店家--------
+// API 70
+message UserAddStationCollectionRequest{
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
+}
+
+message UserAddStationCollectionResponse{
+    required BaseResponse baseResponse = 1;
+}
+
+// API 71
+message UserCancelStationCollectionRequest{
+    required BaseRequest baseRequest = 1;
+    required int64 station_id = 2;
+}
+
+message UserCancelStationCollectionResponse{
+    required BaseResponse baseResponse = 1;
+}
+
+// API 72
+message UserGetStationCollectionRequest{
+    required BaseRequest baseRequest = 1;
+}
+
+message UserGetStationCollectionResponse{
+    required BaseResponse baseResponse = 1;
+    repeated Station stations = 2;
+}
