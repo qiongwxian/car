@@ -1,0 +1,10 @@
+package zeta_car;
+
+option java_package = "com.zetast.carnet.util";
+option java_multiple_files = true;
+
+//一个 int-int 的键值对工具类
+message IntIntKeyValuePair {
+    required int64 key = 1;
+    required int64 value = 2;
+}

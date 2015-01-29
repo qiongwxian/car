@@ -1,0 +1,529 @@
+package zeta_car;
+
+import "Model.proto";
+import "Util.proto";
+
+option java_package = "com.zetast.carerp.netapi";
+option java_multiple_files = true;
+
+
+enum ErpNetApiType{
+	kManagerLogin = 1;
+	kErpRegisterPushToken = 2;
+	kCreateOrder = 3;
+	kAcceptCusOrder = 4;
+	kRejectCusOrder = 5;
+	kOrderStartService = 6;
+	kAgreeUserRefundOrder = 7;
+	kPayOrderUseCash = 8;
+	kOrderFinishService = 9;
+	kGetOrderPayUrlQrcode = 10;
+	kQueryOrderNewestStatus = 11;
+	kCheckFreeStateForStation = 12;
+	kSearchOrder = 13;
+	kChangeUnfinishOrder = 14;
+	kCreateProduct = 15;
+	kDeleteProduct = 16;
+	kChangeProduct = 17;
+	kGetAllProduct = 18;
+	kGetProductHistoryOrder = 19;
+	kGetProductMonthStatistics = 20;
+	kFinancialStatistics = 21;
+	kAddEmployee = 22;
+	kDeleteEmployee = 23;
+	kChangeEmployee = 24;
+	kGetAllEmployee = 25;
+	kAddAbsence = 26;
+	kDeleteAbsence = 27;
+	kGetEmployeesAbsenceToday = 28;
+	kGetEmployeeMonthAttendance = 29;
+}
+
+
+//接口请求报文基类
+message BaseRequest {
+	required int32 sdk_version=1;      //接口版本号
+	required int32 device_type = 2;  //设备类型用1 表示 and，2 表示 ios 区分；
+	required string device_id = 3;  //设备唯一标示符
+	optional int32 client_version = 4;    //客户端版本号
+	optional bytes sign = 5;       //上载内容的sign值 不强制需要
+
+	optional UserIdentity userIdentity = 6;
+}
+
+message UserIdentity{
+	required int64 station_id = 1; //店铺的id
+	required int64 manager_id = 2; //表明管理员身份
+	required string token = 3; //用户鉴权用的token 除了登陆的接口不需要 其他每个接口都必须验证
+}
+
+//接口响应报文基类
+message BaseResponse {
+	required int32 status = 1;//状态码 表示是否处理成功 0为调用正常
+	optional string info = 2; //消息，相当于服务器通知
+}
+
+
+//--------------接口部分---------------
+
+// API 1：管理员登陆
+message ManagerLoginRequest{
+	required BaseRequest baseRequest = 1;
+	required string username = 2;
+	required string password = 3;
+}
+
+message ManagerLoginResponse{
+	required BaseResponse baseResponse = 1;
+	required Station station = 2;
+	required Manager manager = 3;
+	repeated Employee employees = 4;
+	required int64 employees_version = 5;
+	repeated Product products = 6;
+	required int64 products_version = 7;
+	required string token = 8;
+}
+
+
+
+//API 2
+message ErpRegisterPushTokenRequest{
+	required BaseRequest baseRequest = 1;
+
+	optional string client_id = 2; // 个推client id
+	optional string APNS_token = 3;  // iOS端APNS token
+}
+
+message ErpRegisterPushTokenResponse {
+	required BaseResponse baseResponse = 1;  //响应基类
+}
+
+
+
+//-----------------------------订单相关接口----------------------------
+
+
+
+
+// API 20:添加订单
+message CreateOrderRequest{
+	required BaseRequest baseRequest = 1;
+	required Order order = 2; //客户端上传订单内容（此时客户端不知道订单的id 所以id为-1 state的状态为已开始）
+}
+
+message CreateOrderResponse{
+	required BaseResponse baseResponse = 1;
+	// 如果添加成功客户端以服务器传回的对象为准 如果失败的话baseResponse中指明错误 order留空
+	optional Order order = 2; //添加订单以后 返回Order的最新状态
+}
+
+
+//API21 Erp端接收网上的订单
+message AcceptCusOrderRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+}
+
+message AcceptCusOrderResponse{
+	required BaseResponse baseResponse = 1;
+	optional Order order = 2;
+}
+
+// API22:拒绝订单 只在拒绝用户线上订单的时候使用
+message RejectCusOrderRequest{
+	required BaseRequest baseRequest = 1;
+	//要取消订单的id 取消时订单的取消时间以服务器处理的系统时间为准
+	required int64 order_id = 2;
+	optional string cancel_reason = 3;
+}
+
+message RejectCusOrderResponse{
+	required BaseResponse baseResponse = 1;
+	//返回Order的最新状态 取消失败的话 order字段留空
+	optional Order order = 2;
+}
+
+
+//API23
+message OrderStartServiceRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+}
+
+message OrderStartServiceResponse{
+	required BaseResponse baseResponse = 1;
+	optional Order order = 2;
+}
+
+//API24 Erp同意用户的退款申请
+message AgreeUserRefundOrderRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+}
+
+message AgreeUserRefundOrderResponse{
+	required BaseResponse baseResponse = 1;
+	optional Order order = 2;
+}
+
+
+
+// API25
+message PayOrderUseCashRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+}
+
+message PayOrderUseCashResponse{
+	required BaseResponse baseResponse = 1;
+	//成功调用以后 返回这个订单的最新状态
+	optional Order order = 2;
+}
+
+
+// API26 订单完成服务 要检查支付情况
+message OrderFinishServiceRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+}
+
+message OrderFinishServiceResponse{
+	required BaseResponse baseResponse = 1;
+	//成功调用以后 返回这个订单的最新状态
+	optional Order order = 2;
+}
+
+//API 27 商家选择用支付宝或者微信支付某个订单 调用支付宝或者微信的API生成二维码 并做好记录
+message GetOrderPayUrlQrcodeRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 order_id = 2;
+	// 只有出入的way参数为支付宝和微信的时候才有返回值
+	required OrderPayWay way = 3;
+}
+
+message GetOrderPayUrlQrcodeResponse{
+	required BaseResponse baseResponse = 1;
+	required string qrcode_string = 2;
+}
+
+
+
+//API 28 因为加了C端好多的状态 Erp端订单显示不能只根据订单的状态来筛选
+//现在Erp端是4个Tab 所以OrderClass里面4个tab
+enum OrderStatusClass{
+	OrderStatusClass_WaitConfirm = 1; //待店家确认的订单
+	OrderStatusClass_Book = 2; //预约了还没有开始的订单
+	OrderStatusClass_Processing = 3; //处理中的订单
+	OrderStatusClass_History = 4; //历史订单
+}
+message OrderStatusClassQuery{
+	required OrderStatusClass status_class = 1; //要查询哪些状态的订单
+	enum SortWay{
+		//排序方式 (1为默认排序(默认为时间从新到旧)，2为价格从高到低，3为价格从低到高，4为时间从新到旧，5为时间从旧到新)
+		SortWay_Default = 1;
+		SortWay_Price_From_High_To_Low = 2;
+		SortWay_Price_From_Low_To_High = 3;
+		SortWay_Time_From_New_To_Old = 4;
+		SortWay_Time_From_Old_To_New = 5;
+	}
+	required SortWay sort = 2;
+	// order_id 为基于哪个订单返回数据 refresh_direction为刷新的方向
+	required int32 refresh_direct = 3; //刷新方向（1为向下浏览，2为无数据时第一次加载(此时order_id=-1)）
+	required int64 order_id = 4; // 指明偏移量的订单id
+}
+
+message QueryOrderNewestStatusRequest{
+	required BaseRequest baseRequest = 1;
+	repeated OrderStatusClassQuery queries = 2;
+}
+
+message QueryOrderNewestStatusResponse{
+	required BaseResponse baseResponse = 1;
+	message OrderStatusClassQueryResult {
+		required OrderStatusClassQuery query = 1;
+		repeated Order orders = 2; // 每次最多20个 其他数据通过订单id来再次请求
+	}
+	repeated OrderStatusClassQueryResult class_orders = 2;
+}
+
+//API 29 验证一个车行的空闲情况
+message CheckFreeStateForStationRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 station_id = 2;
+
+	// "2014-11-11 00:00:00"
+	//表示 "2014-11-11 00:00:00" - "2014-11-11 00:29:59"
+	repeated string time_periods = 3;
+}
+
+message CheckFreeStateForStationResponse{
+	required BaseResponse baseResponse = 1;
+
+	message FreeStateUnit{
+		required string time_period = 1;
+		required int32 has_book_num = 2; //这个时间段 有多少人预约过了
+	}
+
+	repeated FreeStateUnit free_state = 2;
+	//这个店铺每个时间段能接受的最大预约订单
+	required int32 capacity_every_time_period = 3;
+
+	//这个店每洗一个车要的分钟数 字段先留着 讨论以后再决定怎么搞
+	optional int32 mins_every_car = 4;
+}
+
+
+
+
+// 接口:搜索订单
+//message SearchOrderRequest{
+//	required BaseRequest baseRequest = 1;
+//  required string key = 2; //要查询哪些状态的订单
+//}
+
+//message SearchOrderResponse{
+//	required BaseResponse baseResponse = 1;
+//	repeated Order order = 2;
+//}
+
+
+
+// 接口:更新订单信息 这个接口只能修改还没进入支付阶段的订单（线下订单status只能为 订单已开始3） 如果订单状态已经为 完成并进入支付阶段不允许调用这个接口 后台记得做检查
+//message ChangeUnfinishOrderRequest{
+//    required BaseRequest baseRequest = 1;
+//    required Order order = 2; //客户端上传订单内容 order_id指明要更新的是哪个订单
+//}
+//
+//message ChangeUnfinishOrderResponse{
+//    required BaseResponse baseResponse = 1;
+//	optional Order order = 2; //客户端上传订单内容 order_id指明要更新的是哪个订单
+//}
+
+
+
+
+//------------------------产品相关接口-------------
+
+// API 40: 增加产品
+message CreateProductRequest{
+	required BaseRequest baseRequest = 1;
+	required Product product = 2;  //客户端上传产品内容（此时客户端不知道产品的id 所以id为-1)
+
+	optional bytes image_url = 3; // 新建产品的时候可以上传照片
+}
+
+message CreateProductResponse{
+	required BaseResponse baseResponse = 1;
+	//如果调用成功的话 服务器返回添加后的id 如果失败的话baseResponse中指明错误
+	optional Product product = 2;
+}
+
+// API 41: 删去某个产品
+message DeleteProductRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 product_id = 2;
+}
+
+message DeleteProductResponse{
+	required BaseResponse baseResponse = 1;
+	//在baseResponse里 表示删除成功或者失败
+}
+
+
+// API 42:更新某个产品
+message ChangeProductRequest{
+	required BaseRequest baseRequest = 1;
+	required Product product = 2;
+}
+
+message ChangeProductResponse{
+	required BaseResponse baseResponse = 1;
+	//更新的结果 ERP客户端以服务器返回的对象为准
+	required Product product = 2;
+}
+
+
+// API43:查询所有产品
+message GetAllProductRequest{
+	required BaseRequest baseRequest = 1;
+	//客户端的产品列表的版本号 服务器上有对任何一个产品做任何更改都要 version都要加一
+	//客户端的初始值为0
+	required int64 version = 2;
+}
+
+message GetAllProductResponse{
+	required BaseResponse baseResponse = 1;
+	//如果客户端的版本号的版本号和服务器一致 则只需要返回一致的版本号 不用返回具体的product列表
+	//如果不一致 那么返回最新的版本号和Product列表
+	required int64 version = 2;
+	repeated Product services = 3;
+	repeated Product consumptions = 4;
+	repeated Product bundles = 5; //套餐
+}
+
+// API 44：查询某种产品或者服务的本月历史记录 （注意暂时只考虑本月）
+message GetProductHistoryOrderRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 product_id = 2;
+
+	// order_id 为基于哪个订单返回数据 refresh_direction为刷新的方向
+	// 一般情况refresh_direction不会出现向上浏览刷新 只会是向下浏览加载更多
+	required int32 refresh_direct = 3; //刷新方向（0为向上浏览，1为向下浏览，2为无数据时第一次加载(此时order_id=-1)）
+	required int64 order_id = 4; // 指明偏移量的订单id
+}
+
+message GetProductHistoryOrderResponse{
+	required BaseResponse baseResponse = 1;
+	repeated Order orders = 2; // 每次最多20个 其他数据通过订单id来再次请求
+}
+
+
+
+
+
+//----------------------财务统计相关接口----------------------
+// 后面接口会用到工具类
+message ProductStatisticsUnit{
+	required int64 product_id = 1;
+	required string product_name = 2;
+	required int32 time = 3; //消费次数
+	required double total_price = 4;
+}
+
+//接口50：查询多种产品或者服务的本月统计(次数和总价)
+message GetProductMonthStatisticsRequest{
+	required BaseRequest baseRequest = 1;
+	repeated int64 product_id = 2;
+}
+
+message GetProductMonthStatisticsResponse{
+	required BaseResponse baseResponse = 1;
+	repeated ProductStatisticsUnit statistics = 2;
+}
+
+//接口51 分店所有产品的统计
+message FinancialStatisticsRequest{
+	required BaseRequest baseRequest = 1;
+	//时间字符串的格式 为 "2014-03-02"
+	required string start_day = 2; // 统计开始的那一天
+	required string end_day = 3; // 统计结束的那一天
+}
+
+message FinancialStatisticsResponse{
+	required BaseResponse baseResponse = 1;
+	//在时间段内 该店铺所有的产品分开统计
+	repeated ProductStatisticsUnit statistics = 2;
+}
+
+
+
+
+
+//-----------------------------员工相关接口
+
+// API 60:添加员工
+message AddEmployeeRequest{
+	required BaseRequest baseRequest = 1;
+	required Employee employee = 2;
+}
+
+message AddEmployeeResponse{
+	required BaseResponse baseResponse = 1;
+	//如果调用成功的话 服务器返回添加后的id 如果失败的话baseResponse中指明错误 成功的话 返回员工对象
+	required Employee employee = 2;
+}
+
+// API 61: 删去某个员工
+message DeleteEmployeeRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 employee_id = 2;
+}
+
+message DeleteEmployeeResponse{
+	required BaseResponse baseResponse = 1;
+	//如果调用成功的话  如果失败的话baseResponse中指明错误
+}
+
+// API 62: 更新某个员工的信息
+message ChangeEmployeeRequest{
+	required BaseRequest baseRequest = 1;
+	required Employee employee = 2;
+}
+
+message ChangeEmployeeResponse{
+	required BaseResponse baseResponse = 1;
+	optional Employee employee = 2;
+}
+
+// API 63:查询所有员工
+message GetAllEmployeeRequest{
+	required BaseRequest baseRequest = 1;
+	//客户端的员工列表的版本号 服务器上有对任何一个员工做任何更改都要 version都要加一
+	//客户端的初始值为0
+	required int64 version = 2;
+}
+
+message GetAllEmployeeResponse{
+	required BaseResponse baseResponse = 1;
+	//如果客户端的版本号的版本号和服务器一致 则只需要返回一致的版本号 不用返回具体的列表
+	//如果不一致 那么返回最新的版本号和employee列表
+	required int64 version = 2;
+	repeated Employee employee = 3;
+}
+
+
+
+//接口64 记录某个员工缺勤
+message AddAbsenceRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 employee_id = 2;
+	// 缺勤时间格式 "2012-01-01 08:30:05"
+	required string absence_time = 3;
+}
+
+message AddAbsenceResponse{
+	required BaseResponse baseResponse = 1;
+}
+
+//接口65 取消某个员工缺勤
+message DeleteAbsenceRequest{
+	required BaseRequest baseRequest = 1;
+	required int64 employee_id = 2;
+	// 缺勤时间格式 "2012-01-01 08:30:05"
+	required string absence_time = 3;
+}
+
+message DeleteAbsenceResponse{
+	required BaseResponse baseResponse = 1;
+}
+
+//API 66 获取当天每个员工的出勤情况
+message GetEmployeesAbsenceTodayRequest{
+	required BaseRequest baseRequest = 1;
+	//要获取出勤情况的员工的id
+	repeated int64 employee_ids = 2;
+}
+
+message GetEmployeesAbsenceTodayResponse{
+	required BaseResponse baseResponse = 1;
+	message EmployeAbsenceRecord {
+		required int64 employee_id = 1;
+		required string absence_time = 2;
+	}
+	repeated EmployeAbsenceRecord absence_record = 2;
+}
+
+//API 67 获取某个员工的本月出勤情况统计
+message GetEmployeeMonthAttendanceRequest{
+	required BaseRequest baseRequest = 1;
+	optional int64 employee_id = 2;
+}
+
+message GetEmployeeMonthAttendanceResponse{
+	required BaseResponse baseResponse = 1;
+	//本月出勤天数
+	optional int32 attendance_day_num = 2;
+	//本月缺勤天数
+	optional int32 absence_day_num = 3;
+}
+
