@@ -1,0 +1,219 @@
+package zeta_car;
+option java_package = "com.zetast.carerp.model";
+option java_multiple_files = true;
+
+
+//每个店铺的一些基本信息
+message Station{
+    required int64 station_id = 1;
+	optional int64 manage_id = 2;
+
+    required string name = 10;
+    optional string address = 11;
+    optional string summary = 12;
+	optional string phone_num = 13;
+    optional string image_url = 14; //店的照片
+	
+	optional double latitude = 20; // 纬度
+	optional double longitude = 21; //经度
+
+	//营业时间
+	optional string start_time = 30; 
+	optional string end_time = 31; 
+
+	optional int32 car_space_num = 40; //车位数
+	optional int32 capacity_every_time_period = 41; //每个时间段能接受的最大预约订单
+
+	optional string announcement = 50;// 店铺的公告 
+	repeated StationActivity activities = 51;
+    optional string note = 52;
+
+	optional double score = 60; //客户对这个车行的评价
+}
+
+//店铺的一些促销活动等等
+message StationActivity{
+	required int64 station_id = 1;
+	required string summary = 2;
+	required string detail = 3;
+}
+
+//每个店的店长
+message Manager{
+    required int64 manager_id = 1; //店长的id
+    required string name = 2; // 姓名
+    required int64 station_id = 3; //洗车店的id
+    optional string phone_num = 4; // 电话
+}
+
+
+message Employee{
+    required int64 employee_id = 1; //雇员id -1为无效值（某些情况下用来补充id字段） 这个仅仅作为开发者内部使用的id 系统中id唯一 对比employee_num段
+    required string name = 2; // 雇员姓名
+    optional string phone_num = 3; // 电话
+    required int64 station_id = 4; //洗车店的id
+    optional string employee_num = 5; // 员工编号 这个作为一些企业内部的员工编号 一些工号之类
+}
+
+message CarInfo{
+	required int64 carinfo_id = 1;
+    optional string plate_num = 2; // 车牌号码
+
+    optional string brand = 3; //车辆品牌
+	optional string color = 4;
+	optional string note = 5; // 一些备注
+
+}
+
+message User{
+    required int64 user_id = 1; //用户id
+    required string phone_num = 2; 
+	optional string name = 3; //默认"用户1234"(手机号后四位)
+}
+
+message CouponBundleProductUnit{
+	required int64 product_id = 1; //订单是哪些业务 对应的业务id
+	required string product_name = 2; //产品名也许会改名 所以记录成交时的产品名
+	required int32 num = 3; // 这个表示数量
+}
+
+message Coupon {
+	required int64 coupon_id = 1;
+	required int64 station_id = 2;
+	required int64 bundle_product_id = 3; //注意这个product_id指的是这整个套餐对应的product 具体的套餐内容在products字段
+	repeated CouponBundleProductUnit bundle_content = 4;
+	//如果同个套餐（同个product）买多次 直接不新建Coupon记录 直接在原有的记录上 给每个CouponBundleProductUnit增加个数
+	optional string note = 5;  //套餐卷的备注 数据库一般不需要重新再存 用套餐对应的product中的备注字段就可以 
+}
+
+//这个产品值得是洗车这些服务 或者是某些零件等等
+//关于套餐 套餐也设定为一种Product 
+message Product{
+    required int64 product_id = 1;
+    required int64 station_id = 2; //洗车店的id
+    required int32 type = 3; //type为1表示这个product是服务 2表示是消费 3表示套餐
+    required string name = 4;
+    required double price = 5; //如果是套餐这个就是总价
+    optional string classifier = 6; // 这个product的单位量词 张 次等等
+
+	//套餐才会有的字段 套餐内容
+	repeated CouponBundleProductUnit bundle_content = 20;
+	optional double origin_price = 21;
+
+    optional string image_url = 31; //产品可能会有图片需要展示
+    optional string note = 32;
+}
+
+
+
+enum OrderPayWay{
+	OrderPayWay_Undetermined = 0; //未确定的支付方式 C端下单时 可能还不确定怎么支付 
+	OrderPayWay_Alipay = 1; //支付宝支付
+	OrderPayWay_Wexin = 2; //微信支付
+	OrderPayWay_Coupon = 3; //使用之前购买的套餐券
+	OrderPayWay_Cash = 4; //现金
+}
+
+enum OrderType{
+	OrderType_Cus = 1;
+	OrderType_ErpInstant = 2; //现场订单 直接进入处理中的状态
+	OrderType_ErpBook_AppPay = 3; //B端新建的预定订单 不过要App内支付了状态才能转为预定中
+	OrderType_ErpBook_CashPay = 4; //B端新建的预定订单 直接进入预定中的状态
+}
+
+enum OrderPayStatus{
+	OrderPayStatus_UnPaid = 1; //未支付
+	OrderPayStatus_HasPaid = 2; //已支付
+	OrderPayStatus_Refunding = 3; //退款中
+	OrderPayStatus_RefundSuccess = 4; //退款成功
+	OrderPayStatus_RefundFail = 5;//退款失败
+}
+
+
+enum OrderStatus{
+
+	OrderStatus_All_Booking = 1; //已预订
+	OrderStatus_All_Serving = 2; //服务中 
+	OrderStatus_All_ServiceFinish = 3; // 服务完成 
+	OrderStatus_All_Cancel = 4; //服务中 
+
+	OrderStatus_Cus_WaitUserPay = 10;
+	OrderStatus_Cus_WaitErpAccept = 11;
+	OrderStatus_Cus_RejectByStation = 12; //C端下单被商家拒绝
+
+	OrderStatus_ErpBook_AppPay_WaitUserPay = 20;
+
+	// 线上订单申请退款
+	OrderStatus_Cus_ApplyingRefund = 30;
+	//线上订单退款
+	OrderStatus_Cus_Refunded = 31;
+	// 线上订单超时未接单正在退款
+	OrderStatus_Cus_AcceptTimeoutRefunding = 32;
+	// 线上订单超时未接单已退款
+	OrderStatus_Cus_AcceptTimeoutRefunded = 33;
+
+}
+
+message Order{
+
+	message ProductUnit{
+		required int64 product_id = 1; //订单是哪些业务 对应的业务id
+		required string product_name = 2; //产品名也许会改名 所以记录成交时的产品名
+		required double price = 3; //产品成交时的单价
+		required int32 num = 4; // 这个表示数量
+	}
+
+	required int64 order_id = 1; //订单id -1为无效值（某些情况下用来补充id字段）
+	//这个订单编号作为 显示的订单编号 id 不合适显示给用户看
+	// 20150107123456 日期+6位数 只是给店家和客户看 将来改格式也没关系
+	optional string order_serial_num = 2;
+
+	required OrderType type = 3; //订单类型 
+	required int64 station_id = 4; //洗车店的id
+	repeated ProductUnit products = 5; //订单是哪些业务
+	//要使用的套餐券
+	//订单的总价 应该是所有的product 减去use_coupon中的product 剩下的总价 
+	repeated Coupon use_coupon = 6;
+	required double total_price = 7;
+	required OrderStatus status = 8; 
+    required OrderPayStatus pay_status = 9;
+	required OrderPayWay pay_way = 10; //这个字段仅作为记录支付方式用 不用做一些状态更改的依据
+
+	//客户相关信息
+	optional string plate_num = 20; // 车牌号码
+	optional string cus_phone_num = 21; //客户电话
+	optional int64 user_id = 22;  //对应线上订单用户
+	optional string cus_name = 23;  //客户名
+	optional string car_type = 24; //车辆型号信息
+
+	// 时间字符串格式 "2014-01-01 11:10:01"
+	required string create_time = 30; //订单创建时间
+	optional string accept_time = 31; //线上订单被店家接受时间
+	optional string book_time = 32; //服务预约的时间
+	optional string start_time = 33; //服务真正开始的时间
+	optional string finish_time = 34; //订单结束（包括订单取消等等）
+	optional string pay_time = 35; //客户完成支付的时间
+
+	optional string note = 50; //一些备注信息
+	optional string cancel_reason = 51; 
+}
+
+message OrderEvaluation{
+	required int64 user_id = 1;
+	required int64 statsion_id = 2;
+	required int64 evaluation_id = 3;
+	required string time = 5;
+	required string evaluation = 6;
+
+	optional int32 order_rating = 24; //订单总体评价
+	optional int32 service_rate_rating = 30; //服务速度的评价 
+	
+	//以下字段不是数据库必要字段 只是后面接口可能需要承载这个字段
+	optional string username = 10;
+}
+
+message LLCoordinate{
+	required double latitude = 1; // 纬度
+	required double longitude = 2; //经度
+}
+
