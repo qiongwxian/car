@@ -5,7 +5,7 @@ import tornado.httpclient as httpclient
 from model.model import Model
 import pb.CarCusApi_pb2 as ProtobufAPI
 
-class UserLoginHandler(tornado.web.RequestHandler):
+class UserModifyCarInfoHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.render('index.html',author = 'Zeta -JCheng')
@@ -15,14 +15,14 @@ class UserLoginHandler(tornado.web.RequestHandler):
         rawData = self.request.body
 
         # 创建 request 对象
-        request = ProtobufAPI.UserLoginRequest()
+        request = ProtobufAPI.UserModifyCarInfoRequest()
 
         #
         # 此处一定要对 request 对象进行赋值
         # 例如: request.baserequest.sdk_version = 1
         #
 
-        model = Model('UserLogin')
+        model = Model('UserModifyCarInfo')
         response = model.communication(request)
 
         self.render('index.html',author = 'Zeta - JCheng')

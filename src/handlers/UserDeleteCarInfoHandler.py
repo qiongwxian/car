@@ -5,7 +5,7 @@ import tornado.httpclient as httpclient
 from model.model import Model
 import pb.CarCusApi_pb2 as ProtobufAPI
 
-class UserConfirmFinishServiceHandler(tornado.web.RequestHandler):
+class UserDeleteCarInfoHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.render('index.html',author = 'Zeta -JCheng')
@@ -15,14 +15,14 @@ class UserConfirmFinishServiceHandler(tornado.web.RequestHandler):
         rawData = self.request.body
 
         # 创建 request 对象
-        request = ProtobufAPI.UserConfirmFinishServiceRequest()
+        request = ProtobufAPI.UserDeleteCarInfoRequest()
 
         #
         # 此处一定要对 request 对象进行赋值
         # 例如: request.baserequest.sdk_version = 1
         #
 
-        model = Model('UserConfirmFinishService')
+        model = Model('UserDeleteCarInfo')
         response = model.communication(request)
 
         self.render('index.html',author = 'Zeta - JCheng')
