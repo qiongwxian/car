@@ -37,7 +37,7 @@ urls = [
 	(r'/UserChangeUsername', UserChangeUsernameHandler),
 	(r'/GetStationForLocation', GetStationForLocationHandler),
 	(r'/GetServiceInStation', GetServiceInStationHandler),
-	(r'/GetStationFromId', GetStationFromIdHandler),
+	(r'/GetStationFromId/[0-9]+', GetStationFromIdHandler),
 	(r'/GetProductFromId', GetProductFromIdHandler),
 	(r'/UserCreateOrder', UserCreateOrderHandler),
 	(r'/UserQueryOrder', UserQueryOrderHandler),
